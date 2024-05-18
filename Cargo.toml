@@ -6,7 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+hex = "0.4.3"
 kv = "0.24.0"
+pem = "3.0.4"
 rand = "0.8.5"
 rand_distr = "0.4"
 rsa = "0.9.6"
