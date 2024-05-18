@@ -5,10 +5,14 @@ pub mod server;
 pub mod types;
 pub mod utils;
 
+use std::collections::HashMap;
+
+use ::rsa::pkcs1::EncodeRsaPublicKey;
 use kv::Raw;
 
 use crate::encryption::data_encryption::{encrypt_data_with_public_key, hash_private_key};
 use crate::encryption::db::EncryptedDb;
+use crate::encryption::sender_pov_db::hash_map_to_json_bytes;
 use crate::protocol::UtxoProtocol;
 use crate::rsa::{gen_priv_key, gen_pub_key_from_priv_key};
 use crate::server::Server;
@@ -42,14 +46,33 @@ fn main() {
     let x_bytes = x.to_be_bytes();
 
     // Receiver
-    // Bob (receiver) to hash and encrypt is data and will send to the server hosting the db
+    // Bob (receiver) to hash and encrypt its data and will send to the server hosting the receiver shared secret db
     let bob_hash_priv_key = hash_private_key(&bob_private_key);
     let bob_encrypt_x = encrypt_data_with_public_key(&bob_pub_key, &x_bytes);
 
-    // Receiver shared secret db store encrypted data
-    receiver_shared_secret_db.store(&Raw::from(bob_hash_priv_key), &Raw::from(bob_encrypt_x))
+    // Receiver shared secret db to store encrypted data
+    receiver_shared_secret_db.store(&Raw::from(bob_hash_priv_key), &Raw::from(bob_encrypt_x));
 
-    
+    // Sender
+    // Alice (sender) to hash and encrypt its data and will send to the server hosting the sender shared secret db
+    let alice_hash_priv_key = hash_private_key(&alice_private_key);
+
+    // in this demo case, we are able to assume that the entry for alice to bob is empty
+    // thus we are able to create a new empty hashmap right away
+    let mut map: HashMap<String, usize> = HashMap::new();
+    let bob_pub_key_bytes = bob_pub_key.to_pkcs1_der().unwrap().into_vec();
+    let bob_pub_key_str = String::from_utf8(bob_pub_key_bytes).unwrap();
+    map.insert(bob_pub_key_str, x);
+
+    // convert hashmap to jsonbytes and encrypt with alice's pub key
+    let json_bytes = hash_map_to_json_bytes(map);
+    let alice_encrypted_data = encrypt_data_with_public_key(&alice_pub_key, &json_bytes);
+
+    // Sender shared secret db to store encrypted data
+    sender_shared_secret_db.store(
+        &Raw::from(alice_hash_priv_key),
+        &Raw::from(alice_encrypted_data),
+    )
 }
 
 /*
