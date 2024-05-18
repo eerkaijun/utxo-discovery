@@ -5,7 +5,6 @@ pub mod server;
 pub mod types;
 pub mod utils;
 
-<<<<<<< HEAD
 use ::rsa::pkcs1::EncodeRsaPublicKey;
 use kv::Raw;
 
@@ -13,12 +12,7 @@ use crate::encryption::data_encryption::{encrypt_data_with_public_key, hash_priv
 use crate::encryption::db::EncryptedDb;
 use crate::encryption::sender_pov_db::hash_map_to_json_bytes;
 use sha256::digest as Sha256Digest;
-use std::collections::HashMap;
-=======
-use rand::random;
-use sha256::digest as Sha256Digest;
-use std::collections::HashSet;
->>>>>>> 0f216d5 (retrieving from available range set)
+use std::collections::{HashMap, HashSet};
 use crate::protocol::UtxoProtocol;
 use crate::rsa::{gen_priv_key, gen_pub_key_from_priv_key};
 use crate::server::Server;
@@ -43,22 +37,6 @@ fn main() {
 
     // Instantiate protocol
     let mut protocol = UtxoProtocol::new(server);
-
-    // Bob (receiver) publishes nonce and range
-    let bob_pub_key = 123456 as u32;
-    let random_nonce = 100;
-    let threshold_constant = 10;
-    protocol.register(bob_pub_key, random_nonce, threshold_constant);
-
-    // Shared secret between Alice and Bob
-    let shared_secret = 9999 as u128;
-    let tag_index = 5;
-
-    // Alice generates a tag and transaction
-    protocol.transfer_and_tag(shared_secret, bob_pub_key, 100.0, tag_index);
-
-    // Retrieve column index 0
-    protocol.generate_query(0);
 
     // TODO: generate shared_secret instead of using hardcoded data
     let x: usize = 12343534234;
@@ -96,11 +74,20 @@ fn main() {
         &Raw::from(alice_hash_priv_key),
         &Raw::from(alice_encrypted_data),
     );
-    // Retrieve column index based on tag
-    let concatenated_data = format!("{}{}", shared_secret, tag_index);
-    let tag = Sha256Digest(concatenated_data.as_bytes());
-    let column_index = protocol.get_column_from_tag(tag);
-    protocol.generate_query(column_index);
+
+    // Bob (receiver) publishes nonce and range
+    let bob_pub_key = 123456 as u32;
+    let random_nonce = 100;
+    let threshold_constant = 10;
+    protocol.register(bob_pub_key, random_nonce, threshold_constant);
+
+    // Shared secret between Alice and Bob
+    let shared_secret = 9999 as u128;
+    let tag_index = 5;
+
+    // Alice generates a tag and transaction
+    protocol.transfer_and_tag(shared_secret, bob_pub_key, 100.0, tag_index);
+    
     // Retrieve all columns from the published nonce and the range to the threshold
     let mut column_set: HashSet<usize> = HashSet::new();
     for i in random_nonce..random_nonce + (threshold_constant as u128) {
