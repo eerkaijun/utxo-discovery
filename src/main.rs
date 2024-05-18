@@ -13,4 +13,7 @@ fn main() {
 
     // Instantiate protocol
     let protocol = UtxoProtocol::new(server);
+
+    // TODO: include arguments
+    protocol.generate_query();
 }

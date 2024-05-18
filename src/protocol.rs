@@ -1,6 +1,9 @@
 use std::collections::HashMap;
+use tfhe::{ConfigBuilder, generate_keys, FheUint8};
+use tfhe::prelude::*;
+
 use crate::server::Server;
-use crate::types::{PublicUserInfo, Transaction};
+use crate::types::PublicUserInfo;
 
 pub struct UtxoProtocol {
     // maps a user public key to its public information
@@ -31,8 +34,19 @@ impl UtxoProtocol {
 
     }
 
-    pub fn generate_query() {
-        // Helper function to generate query to be sent to the server
+    // Helper function to generate query to be sent to the server
+    pub fn generate_query(self) {
+        // Generate client and server key for private information retrieval
+        let config = ConfigBuilder::default().build();
+        let (client_key, server_key) = generate_keys(config);
 
+        // TODO: remove hardcode
+        let query = FheUint8::encrypt(5 as u8, &client_key);
+        let data = FheUint8::encrypt(20 as u8, &client_key);
+
+        let query_response = self.server_instance.process_query(query, data, server_key);
+        let decrypted_response: u8 = query_response.decrypt(&client_key);
+
+        println!("Decrypted response: {:?}", decrypted_response);
     }
 }
