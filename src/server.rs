@@ -18,7 +18,7 @@ pub struct Server {
     pub p: u128,
 
     // database of size m rows and m columns
-    db: Vec<Vec<f64>>,
+    pub db: Vec<Vec<f64>>,
     // subset of database of size m rows and n columns
     pub a: Vec<Vec<f64>>,
     // hint database of size m rows and n columns
@@ -35,8 +35,7 @@ impl Server {
         let mut matrix = vec![vec![0 as f64; matrix_size]; matrix_size];
         let mut submatrix = vec![vec![0 as f64; lwe_size]; matrix_size];
 
-        // populate matrix with 0-63
-        // TODO: matrix should be populated with tag transactions
+        // populate initial matrix
         let mut value = 0;
         for i in 0..matrix_size {
             for j in 0..matrix_size {
@@ -67,7 +66,36 @@ impl Server {
         }
     }
 
-    pub fn process_query(self, query: &Vec<f64>) -> Vec<f64> {
+    // A and H matrix needs to be updated when db is updated
+    fn update(&mut self) {
+        let matrix = self.db.clone();
+
+        // submatrix is a randomly sampled column subset of matrix
+        let mut submatrix = vec![vec![0 as f64; self.n as usize]; self.m as usize];
+        for i in 0..self.m as usize {
+            for j in 0..self.n as usize {
+                submatrix[i][j] = matrix[i][j];
+            }
+        }
+
+        // hint matrix is the matmul of matrix and submatrix
+        let hint = matrix_multiply(&matrix, &submatrix);
+
+        self.a = submatrix;
+        self.h = hint;
+    }
+
+    pub fn publish_to_database(
+        &mut self,
+        row_index: usize,
+        column_index: usize,
+        item: f64
+    ) {
+        self.db[row_index][column_index] = item;
+        self.update();
+    }
+
+    pub fn process_query(&self, query: &Vec<f64>) -> Vec<f64> {
         // Take in query argument and perform PIR, return encrypted data
         // Db * q
         detranspose(&matrix_multiply(&self.db, &transpose(query)))

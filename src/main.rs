@@ -33,10 +33,20 @@ fn main() {
     let sender_shared_secret_db = EncryptedDb::new("./sender_shared_secret_db");
 
     // Instantiate server
-    let server = Server::new(8, 4, 23, 7);
+    let server = Server::new(8, 4, 199, 127);
 
     // Instantiate protocol
-    let protocol = UtxoProtocol::new(server);
+    let mut protocol = UtxoProtocol::new(server);
+
+    // Bob (receiver) publishes nonce and range
+    let bob_pub_key = 123456 as u32;
+    protocol.register(bob_pub_key, 100, 20);
+
+    // Shared secret between Alice and Bob
+    let shared_secret = 9999 as u128;
+
+    // Alice generates a tag and transaction
+    protocol.transfer_and_tag(shared_secret, bob_pub_key, 100.0, 15);
 
     // Retrieve column index 0
     protocol.generate_query(0);

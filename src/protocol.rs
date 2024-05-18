@@ -1,13 +1,14 @@
 use rand::Rng;
 use rand_distr::{Distribution, Normal};
+use sha256::digest as Sha256Digest;
 use std::collections::HashMap;
 use crate::server::Server;
-use crate::types::PublicUserInfo;
+use crate::types::{PublicUserInfo, Transaction};
 use crate::utils::{detranspose, matrix_add, matrix_multiply, matrix_sub};
 
 pub struct UtxoProtocol {
     // maps a user public key to its public information
-    user_info: HashMap<String, PublicUserInfo>,
+    user_info: HashMap<u32, PublicUserInfo>,
     // server instance (single server PIR)
     server_instance: Server,
 }
@@ -20,22 +21,33 @@ impl UtxoProtocol {
         }
     }
 
-    pub fn register(mut self, pub_key: String, random_nonce: u128, threshold_constant: u32) {
+    pub fn register(&mut self, pub_key: u32, random_nonce: u128, threshold_constant: u32) {
         let user_info = PublicUserInfo::new(random_nonce, threshold_constant);
         self.user_info.insert(pub_key, user_info);
     }
 
-    pub fn transfer_and_tag(receiver_pub_key: String, amount: u128, tag: u32) {
+    pub fn transfer_and_tag(
+        &mut self,
+        shared_secret: u128,
+        receiver_pub_key: u32,
+        amount: f32,
+        tag_index: u32
+    ) {
         // Generate UTXO Transaction
-
-        // Retrieve tag range of receiver
+        let mut tx = Transaction::new(receiver_pub_key, amount).serialize_to_f64() as u64;
+        tx %= self.server_instance.q as u64;
+        println!("Transaction sent: {:?}", tx);
 
         // Publish tuple of [H(x|tag), Transaction] to the server
-
+        let concatenated_data = format!("{}{}", shared_secret, tag_index);
+        // TODO: convert tag to location in database
+        let tag = Sha256Digest(concatenated_data.as_bytes());
+        
+        self.server_instance.publish_to_database(0, 0, tx as f64);
     }
 
     // Helper function to generate query to be sent to the server
-    pub fn generate_query(self, column_index: usize) {
+    pub fn generate_query(&self, column_index: usize) {
         // public matrices by server
         let a_matrix = self.server_instance.a.clone();
         let h_matrix = self.server_instance.h.clone();
