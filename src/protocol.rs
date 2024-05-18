@@ -1,3 +1,5 @@
+use rand::Rng;
+use rand_distr::{Distribution, Normal};
 use std::collections::HashMap;
 use crate::server::Server;
 use crate::types::PublicUserInfo;
@@ -38,15 +40,26 @@ impl UtxoProtocol {
         let a_matrix = self.server_instance.a.clone();
         let h_matrix = self.server_instance.h.clone();
 
-        // query specific secret vector
-        // TODO: secret vector should be generate randomly
-        let s_vector = vec![vec![1 as f64; 1]; self.server_instance.n as usize];
+        // query specific secret vector (generated randomly)
+        let s_vector: Vec<Vec<f64>> = (0..self.server_instance.n as usize)
+            .map(|_| {
+                let random_value = match rand::thread_rng().gen_range(0..=2) {
+                    0 => -1.0,
+                    1 => 0.0,
+                    _ => 1.0,
+                };
+                vec![random_value as f64; 1]
+            })
+            .collect();
 
         // A * s
         let a_s = detranspose(&matrix_multiply(&a_matrix, &s_vector));
     
-        // TODO: should be set as a gaussian distribution with standard deviation of LWE
-        let error_matrix = vec![0 as f64; self.server_instance.m as usize];
+        // Generate the error matrix with Gaussian distribution with standard deviation of LWE
+        let normal_dist = Normal::new(0.0, 0.00001).unwrap();
+        let error_matrix: Vec<f64> = (0..self.server_instance.m as usize)
+            .map(|_| normal_dist.sample(&mut rand::thread_rng()))
+            .collect();
 
         // Q / P
         let scale_factor = self.server_instance.q as f64 / self.server_instance.p as f64;
@@ -67,10 +80,10 @@ impl UtxoProtocol {
         // Db * q - H * s
         let scaled_result = matrix_sub(&response, &h_s);
 
-        // scale down by Q / P
+        // scale down by Q / P and round to one decimal
         let mut retrieved_data = vec![0.0; scaled_result.len()];
         for i in 0..scaled_result.len() {
-            retrieved_data[i] = scaled_result[i] / scale_factor;
+            retrieved_data[i] = (scaled_result[i] / scale_factor * 10.0).round() / 10.0;
         }
 
         println!("Retrieved data: {:?}", retrieved_data);
