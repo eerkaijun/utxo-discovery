@@ -1,4 +1,6 @@
+pub mod encryption;
 pub mod protocol;
+mod rsa;
 pub mod server;
 pub mod types;
 pub mod utils;
