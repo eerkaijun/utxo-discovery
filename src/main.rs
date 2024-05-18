@@ -1,6 +1,7 @@
 pub mod protocol;
 pub mod server;
 pub mod types;
+mod rsa;
 
 use crate::protocol::UtxoProtocol;
 use crate::server::Server;
