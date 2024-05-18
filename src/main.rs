@@ -17,5 +17,6 @@ fn main() {
     // Instantiate protocol
     let protocol = UtxoProtocol::new(server);
 
-    protocol.generate_query();
+    // Retrieve column index 0
+    protocol.generate_query(0);
 }

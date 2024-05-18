@@ -33,7 +33,7 @@ impl UtxoProtocol {
     }
 
     // Helper function to generate query to be sent to the server
-    pub fn generate_query(self) {
+    pub fn generate_query(self, column_index: usize) {
         // public matrices by server
         let a_matrix = self.server_instance.a.clone();
         let h_matrix = self.server_instance.h.clone();
@@ -52,8 +52,8 @@ impl UtxoProtocol {
         let scale_factor = self.server_instance.q as f64 / self.server_instance.p as f64;
 
         // (Q / P) * col_i 
-        // TODO: currently selecting column one as data to return
-        let column_matrix = vec![scale_factor, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+        let mut column_matrix = vec![0.0; self.server_instance.m as usize];
+        column_matrix[column_index] = scale_factor;
 
         // q = A * s + E + (Q/P) * col_i
         let query = matrix_add(&matrix_add(&a_s, &error_matrix), &column_matrix);
