@@ -1,11 +1,9 @@
+mod rsa;
 pub mod encryption;
 pub mod protocol;
-mod rsa;
 pub mod server;
 pub mod types;
 pub mod utils;
-
-use std::collections::HashMap;
 
 use ::rsa::pkcs1::EncodeRsaPublicKey;
 use kv::Raw;
@@ -13,6 +11,8 @@ use kv::Raw;
 use crate::encryption::data_encryption::{encrypt_data_with_public_key, hash_private_key};
 use crate::encryption::db::EncryptedDb;
 use crate::encryption::sender_pov_db::hash_map_to_json_bytes;
+use sha256::digest as Sha256Digest;
+use std::collections::HashMap;
 use crate::protocol::UtxoProtocol;
 use crate::rsa::{gen_priv_key, gen_pub_key_from_priv_key};
 use crate::server::Server;
@@ -40,13 +40,14 @@ fn main() {
 
     // Bob (receiver) publishes nonce and range
     let bob_pub_key = 123456 as u32;
-    protocol.register(bob_pub_key, 100, 20);
+    protocol.register(bob_pub_key, 100, 10);
 
     // Shared secret between Alice and Bob
     let shared_secret = 9999 as u128;
+    let tag_index = 5;
 
     // Alice generates a tag and transaction
-    protocol.transfer_and_tag(shared_secret, bob_pub_key, 100.0, 15);
+    protocol.transfer_and_tag(shared_secret, bob_pub_key, 100.0, tag_index);
 
     // Retrieve column index 0
     protocol.generate_query(0);
@@ -86,7 +87,12 @@ fn main() {
     sender_shared_secret_db.store(
         &Raw::from(alice_hash_priv_key),
         &Raw::from(alice_encrypted_data),
-    )
+    );
+    // Retrieve column index based on tag
+    let concatenated_data = format!("{}{}", shared_secret, tag_index);
+    let tag = Sha256Digest(concatenated_data.as_bytes());
+    let column_index = protocol.get_column_from_tag(tag);
+    protocol.generate_query(column_index);
 }
 
 /*

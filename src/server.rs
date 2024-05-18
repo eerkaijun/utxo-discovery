@@ -32,17 +32,8 @@ impl Server {
         ciphertext_modulus: u128,
         plaintext_modulus: u128,
     ) -> Self {
-        let mut matrix = vec![vec![0 as f64; matrix_size]; matrix_size];
+        let matrix = vec![vec![0 as f64; matrix_size]; matrix_size];
         let mut submatrix = vec![vec![0 as f64; lwe_size]; matrix_size];
-
-        // populate initial matrix
-        let mut value = 0;
-        for i in 0..matrix_size {
-            for j in 0..matrix_size {
-                matrix[i][j] = value as f64;
-                value += 1;
-            }
-        }
 
         // submatrix is a randomly sampled column subset of matrix
         for i in 0..matrix_size {

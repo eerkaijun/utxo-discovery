@@ -40,10 +40,30 @@ impl UtxoProtocol {
 
         // Publish tuple of [H(x|tag), Transaction] to the server
         let concatenated_data = format!("{}{}", shared_secret, tag_index);
-        // TODO: convert tag to location in database
+        // convert tag to column in database
         let tag = Sha256Digest(concatenated_data.as_bytes());
+        let column_index = self.get_column_from_tag(tag);
+        let mut row_index = 0 as usize;
+        while row_index < self.server_instance.m as usize {
+            if self.server_instance.db[row_index][column_index] == 0.0 {
+                break;
+            }
+            row_index += 1;
+        }
+        if row_index as u128 == self.server_instance.m {
+            // database is full
+            println!("Cannot publish to database, please refresh nonce and threshold");
+            return
+        }
         
-        self.server_instance.publish_to_database(0, 0, tx as f64);
+        self.server_instance.publish_to_database(row_index, column_index, tx as f64);
+    }
+
+    pub fn get_column_from_tag(&self, tag: String) -> usize {
+        // Hacky way to get deterministic column based on tag 
+        let tag_hash_int = u128::from_str_radix(&tag[..16], 16).unwrap();
+        let column_index = tag_hash_int % self.server_instance.m;
+        column_index as usize
     }
 
     // Helper function to generate query to be sent to the server
