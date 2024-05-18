@@ -1,5 +1,5 @@
 use crate::types::Transaction;
-use crate::utils::matrix_multiply;
+use crate::utils::{detranspose, matrix_multiply, transpose};
 
 pub struct Server {
     // tuple of [H(x|tag), Transaction]
@@ -19,9 +19,9 @@ pub struct Server {
 
     // database of size m rows and m columns
     db: Vec<Vec<f64>>,
-    // subset of database
+    // subset of database of size m rows and n columns
     pub a: Vec<Vec<f64>>,
-    // hint database
+    // hint database of size m rows and n columns
     pub h: Vec<Vec<f64>>
 }
 
@@ -63,12 +63,8 @@ impl Server {
         }
     }
 
-    pub fn process_query(self) {
+    pub fn process_query(self, query: &Vec<f64>) -> Vec<f64> {
         // Take in query argument and perform PIR, return encrypted data
-        println!("Database vector: {:?}", self.db);
-
-        println!("A vector: {:?}", self.a);
-
-        println!("H vector: {:?}", self.h);
+        detranspose(&matrix_multiply(&self.db, &transpose(query)))
     }
 }

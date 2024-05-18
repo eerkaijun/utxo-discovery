@@ -32,8 +32,33 @@ pub fn matrix_add(a: &Vec<f64>, b: &Vec<f64>) -> Vec<f64> {
     result
 }
 
+// Helper function to perform subtraction of two matrices of same dimension
+pub fn matrix_sub(a: &Vec<f64>, b: &Vec<f64>) -> Vec<f64> {
+    let len = a.len();
+    
+    // Initialize the result matrix with zeros
+    let mut result = vec![0 as f64; len];
+
+    for i in 0..len {
+        result[i] = a[i] - b[i];
+    }
+
+    result
+}
+
+// Helper function to transpose a row vector to a column vector
+pub fn transpose(matrix: &Vec<f64>) -> Vec<Vec<f64>> {
+    let mut result = Vec::new();
+
+    for &element in matrix {
+        result.push(vec![element]);
+    }
+
+    result
+}
+
 // Helper function to transpose a column vector in a row vector
-pub fn transpose(matrix: &Vec<Vec<f64>>) -> Vec<f64> {
+pub fn detranspose(matrix: &Vec<Vec<f64>>) -> Vec<f64> {
     let mut result = Vec::new();
 
     for row in matrix {
