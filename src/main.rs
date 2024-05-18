@@ -10,7 +10,7 @@ fn main() {
     println!("Starting UTXO note discovery protocol...");
 
     // Instantiate server
-    let server = Server::new();
+    let server = Server::new(8, 4, 23, 7);
 
     // Instantiate protocol
     let protocol = UtxoProtocol::new(server);

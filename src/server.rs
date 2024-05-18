@@ -26,13 +26,17 @@ pub struct Server {
 }
 
 impl Server {
-    pub fn new() -> Self {
-        let matrix_size = 8;
-        let lwe_size = 4;
+    pub fn new(
+        matrix_size: usize,
+        lwe_size: usize,
+        ciphertext_modulus: u128,
+        plaintext_modulus: u128,
+    ) -> Self {
         let mut matrix = vec![vec![0 as f64; matrix_size]; matrix_size];
         let mut submatrix = vec![vec![0 as f64; lwe_size]; matrix_size];
 
         // populate matrix with 0-63
+        // TODO: matrix should be populated with tag transactions
         let mut value = 0;
         for i in 0..matrix_size {
             for j in 0..matrix_size {
@@ -55,8 +59,8 @@ impl Server {
             published_tags: vec![],
             m: matrix_size as u128,
             n: lwe_size as u128,
-            q: 23,
-            p: 7,
+            q: ciphertext_modulus,
+            p: plaintext_modulus,
             db: matrix,
             a: submatrix,
             h: hint

@@ -52,6 +52,7 @@ impl UtxoProtocol {
         let scale_factor = self.server_instance.q as f64 / self.server_instance.p as f64;
 
         // (Q / P) * col_i 
+        // TODO: currently selecting column one as data to return
         let column_matrix = vec![scale_factor, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
 
         // q = A * s + E + (Q/P) * col_i
@@ -67,8 +68,8 @@ impl UtxoProtocol {
         let scaled_result = matrix_sub(&response, &h_s);
 
         // scale down by Q / P
-        let mut retrieved_data = vec![0.0; 8];
-        for i in 0..8 {
+        let mut retrieved_data = vec![0.0; scaled_result.len()];
+        for i in 0..scaled_result.len() {
             retrieved_data[i] = scaled_result[i] / scale_factor;
         }
 
