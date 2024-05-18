@@ -60,8 +60,12 @@ fn main() {
     // in this demo case, we are able to assume that the entry for alice to bob is empty
     // thus we are able to create a new empty hashmap right away
     let mut map: HashMap<String, usize> = HashMap::new();
-    let bob_pub_key_bytes = bob_pub_key.to_pkcs1_der().unwrap().into_vec();
-    let bob_pub_key_str = String::from_utf8(bob_pub_key_bytes).unwrap();
+
+    let der = bob_pub_key.to_pkcs1_der().expect("Failed to encode DER");
+    // let hex_string = hex::encode(der);
+    let bob_pub_key_str = String::from("abcd123"); // this value is hardcoded for demo purposes
+
+    // map.insert(String::from("1234"), x);
     map.insert(bob_pub_key_str, x);
 
     // convert hashmap to jsonbytes and encrypt with alice's pub key
