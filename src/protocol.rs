@@ -56,6 +56,7 @@ impl UtxoProtocol {
             return
         }
         
+        println!("Inserting into column: {:?}", column_index);
         self.server_instance.publish_to_database(row_index, column_index, tx as f64);
     }
 

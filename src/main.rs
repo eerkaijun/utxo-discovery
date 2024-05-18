@@ -5,6 +5,7 @@ pub mod server;
 pub mod types;
 pub mod utils;
 
+<<<<<<< HEAD
 use ::rsa::pkcs1::EncodeRsaPublicKey;
 use kv::Raw;
 
@@ -13,6 +14,11 @@ use crate::encryption::db::EncryptedDb;
 use crate::encryption::sender_pov_db::hash_map_to_json_bytes;
 use sha256::digest as Sha256Digest;
 use std::collections::HashMap;
+=======
+use rand::random;
+use sha256::digest as Sha256Digest;
+use std::collections::HashSet;
+>>>>>>> 0f216d5 (retrieving from available range set)
 use crate::protocol::UtxoProtocol;
 use crate::rsa::{gen_priv_key, gen_pub_key_from_priv_key};
 use crate::server::Server;
@@ -40,7 +46,9 @@ fn main() {
 
     // Bob (receiver) publishes nonce and range
     let bob_pub_key = 123456 as u32;
-    protocol.register(bob_pub_key, 100, 10);
+    let random_nonce = 100;
+    let threshold_constant = 10;
+    protocol.register(bob_pub_key, random_nonce, threshold_constant);
 
     // Shared secret between Alice and Bob
     let shared_secret = 9999 as u128;
@@ -93,6 +101,19 @@ fn main() {
     let tag = Sha256Digest(concatenated_data.as_bytes());
     let column_index = protocol.get_column_from_tag(tag);
     protocol.generate_query(column_index);
+    // Retrieve all columns from the published nonce and the range to the threshold
+    let mut column_set: HashSet<usize> = HashSet::new();
+    for i in random_nonce..random_nonce + (threshold_constant as u128) {
+        let concatenated_data = format!("{}{}", shared_secret, i);
+        let tag = Sha256Digest(concatenated_data.as_bytes());
+        let column_index = protocol.get_column_from_tag(tag);
+        column_set.insert(column_index);
+    }
+
+    for item in column_set {
+        println!("Retrieving from column: {:?}", item);
+        protocol.generate_query(item);
+    }
 }
 
 /*
