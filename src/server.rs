@@ -65,6 +65,7 @@ impl Server {
 
     pub fn process_query(self, query: &Vec<f64>) -> Vec<f64> {
         // Take in query argument and perform PIR, return encrypted data
+        // Db * q
         detranspose(&matrix_multiply(&self.db, &transpose(query)))
     }
 }
