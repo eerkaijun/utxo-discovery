@@ -40,7 +40,7 @@ impl UtxoProtocol {
         let a_matrix = self.server_instance.a.clone();
         let h_matrix = self.server_instance.h.clone();
 
-        // query specific secret vector (generated randomly)
+        // query specific secret vector (generated randomly through a ternary distribution)
         let s_vector: Vec<Vec<f64>> = (0..self.server_instance.n as usize)
             .map(|_| {
                 let random_value = match rand::thread_rng().gen_range(0..=2) {
