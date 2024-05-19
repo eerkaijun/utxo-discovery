@@ -31,7 +31,7 @@ impl UtxoProtocol {
         shared_secret: u128,
         receiver_pub_key: u32,
         amount: f32,
-        tag_index: u32
+        tag_index: u128
     ) {
         // Generate UTXO Transaction
         let mut tx = Transaction::new(receiver_pub_key, amount).serialize_to_f64() as u64;

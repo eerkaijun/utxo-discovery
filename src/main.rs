@@ -86,7 +86,12 @@ fn main() {
     let tag_index = 5;
 
     // Alice generates a tag and transaction
-    protocol.transfer_and_tag(shared_secret, bob_pub_key, 100.0, tag_index);
+    protocol.transfer_and_tag(
+        shared_secret,
+        bob_pub_key,
+        100.0,
+        random_nonce + tag_index
+    );
     
     // Retrieve all columns from the published nonce and the range to the threshold
     let mut column_set: HashSet<usize> = HashSet::new();
