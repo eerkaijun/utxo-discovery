@@ -15,6 +15,10 @@ In recent years there have been many research around improving the UTXO note dis
 
 The steps of the private information retrieval can be seen in the `generate_query()` function in [this file](./src/protocol.rs).
 
+The private information retrieval is done through a learning with error (LWE) scheme. The implemented protocol is shown below.
+
+![LWE equation](./images/lwe_equation.jpg)
+
 ## Getting Started
 
 `cargo run` to go through the end to end flow of UTXO note discovery using private information retrieval.
