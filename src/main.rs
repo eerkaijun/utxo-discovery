@@ -38,9 +38,10 @@ fn main() {
     // Instantiate protocol
     let mut protocol = UtxoProtocol::new(server);
 
+    // Shared secret between Alice and Bob
     // TODO: generate shared_secret instead of using hardcoded data
-    let x: usize = 12343534234;
-    let x_bytes = x.to_be_bytes();
+    let shared_secret: u128 = 9999;
+    let x_bytes = shared_secret.to_be_bytes();
 
     // Receiver
     // Bob (receiver) to hash and encrypt its data and will send to the server hosting the receiver shared secret db
@@ -62,8 +63,7 @@ fn main() {
     // let hex_string = hex::encode(der);
     let bob_pub_key_str = String::from("abcd123"); // this value is hardcoded for demo purposes
 
-    // map.insert(String::from("1234"), x);
-    map.insert(bob_pub_key_str, x);
+    map.insert(bob_pub_key_str, shared_secret as usize);
 
     // convert hashmap to jsonbytes and encrypt with alice's pub key
     let json_bytes = hash_map_to_json_bytes(map);
@@ -81,8 +81,7 @@ fn main() {
     let threshold_constant = 10;
     protocol.register(bob_pub_key, random_nonce, threshold_constant);
 
-    // Shared secret between Alice and Bob
-    let shared_secret = 9999 as u128;
+    // Alice selects an unused tag index
     let tag_index = 5;
 
     // Alice generates a tag and transaction
